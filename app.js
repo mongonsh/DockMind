@@ -29,7 +29,7 @@ const truckPresets = {
 };
 
 const route = ["Osaka", "Kyoto", "Nagoya"];
-const colors = ["#1f6feb", "#168a4a", "#b56a00", "#047481", "#6b4eff", "#b42318", "#344054"];
+const colors = ["#245fbb", "#14724e", "#b96818", "#127581", "#6658a8", "#b43b32", "#344054"];
 const roles = [
   { id: "loader", label: "Loader" },
   { id: "driver", label: "Driver" },
@@ -61,6 +61,8 @@ const el = {
   statusCargo: document.getElementById("status-cargo"),
   statusFit: document.getElementById("status-fit"),
   statusRisk: document.getElementById("status-risk"),
+  detectionCount: document.getElementById("detection-count"),
+  canvasWeight: document.getElementById("canvas-weight"),
   imageInput: document.getElementById("image-input"),
   warehouseImage: document.getElementById("warehouse-image"),
   detectionOverlay: document.getElementById("detection-overlay"),
@@ -237,9 +239,17 @@ function renderLayout(plan) {
     box.style.top = `${(item.y / truck.width) * 100}%`;
     box.style.width = `${Math.max(7, (item.placedLength / truck.length) * 100)}%`;
     box.style.height = `${Math.max(12, (item.placedWidth / truck.width) * 100)}%`;
-    box.style.background = item.fits ? colors[index % colors.length] : "";
+    box.style.setProperty("--cargo-color", item.fits ? colors[index % colors.length] : "#b43b32");
     box.title = `${item.id}: ${item.label}`;
-    box.textContent = item.id;
+
+    const id = document.createElement("strong");
+    id.textContent = item.id;
+    const stop = document.createElement("span");
+    stop.textContent = item.stop;
+    const size = document.createElement("em");
+    size.textContent = `${item.length}x${item.width}cm`;
+    box.append(id, stop, size);
+
     el.truckLayout.appendChild(box);
   }
 }
@@ -249,15 +259,20 @@ function renderRisks(plan) {
   for (const risk of plan.warnings.slice(0, 6)) {
     const node = document.createElement("div");
     node.className = `risk ${risk.level === "bad" ? "bad" : risk.level === "warn" ? "warn" : ""}`;
-    node.innerHTML = `<strong>${risk.title}</strong><span>${risk.body}</span>`;
+    const title = document.createElement("strong");
+    title.textContent = risk.title;
+    const body = document.createElement("span");
+    body.textContent = risk.body;
+    node.append(title, body);
     el.riskList.appendChild(node);
   }
 }
 
 function renderStatus(plan) {
-  el.statusCargo.textContent = `${plan.cargo.length} cargo`;
-  el.statusFit.textContent = `${plan.metrics.fill}% fill`;
-  el.statusRisk.textContent = `${plan.metrics.riskCount} risks`;
+  el.statusCargo.innerHTML = `<small>Cargo</small><strong>${plan.cargo.length}</strong>`;
+  el.statusFit.innerHTML = `<small>Fill</small><strong>${plan.metrics.fill}%</strong>`;
+  el.statusRisk.innerHTML = `<small>Risks</small><strong>${plan.metrics.riskCount}</strong>`;
+  el.canvasWeight.textContent = `${plan.metrics.totalWeight}kg of ${plan.truck.maxWeight}kg`;
 }
 
 function renderRoleTabs() {
@@ -500,6 +515,8 @@ function renderDetections(detections, options = {}) {
   lastDetections = detections
     .map(normalizeDetection)
     .filter(detection => detection.w >= 2 && detection.h >= 2);
+  const stableDetections = lastDetections.filter(detection => !detection.draft).length;
+  el.detectionCount.textContent = `${stableDetections} mark${stableDetections === 1 ? "" : "s"}`;
   el.detectionOverlay.innerHTML = "";
   for (const detection of lastDetections) {
     const display = imageToOverlayDetection(detection);

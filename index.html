@@ -9,14 +9,22 @@
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <div>
-          <p class="eyebrow">Dynamic freight interface</p>
-          <h1>DockMind</h1>
+        <div class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">DM</span>
+          <div>
+            <p class="eyebrow">Dynamic freight interface</p>
+            <h1>DockMind</h1>
+          </div>
+        </div>
+        <div class="route-line" aria-label="active route">
+          <span>Osaka</span>
+          <span>Kyoto</span>
+          <span>Nagoya</span>
         </div>
         <div class="status-strip" aria-label="plan status">
-          <span id="status-cargo">0 cargo</span>
-          <span id="status-fit">0% fill</span>
-          <span id="status-risk">0 risks</span>
+          <span id="status-cargo"><small>Cargo</small><strong>0</strong></span>
+          <span id="status-fit"><small>Fill</small><strong>0%</strong></span>
+          <span id="status-risk"><small>Risks</small><strong>0</strong></span>
         </div>
       </header>
 
@@ -32,12 +40,16 @@
 
           <label class="file-drop" for="image-input">
             <input id="image-input" type="file" accept="image/*">
-            <span>Image or webcam frame</span>
+            <span>Warehouse image</span>
           </label>
 
           <div class="vision-stage">
             <img id="warehouse-image" src="assets/sample-warehouse.svg" alt="warehouse boxes with cargo tags">
             <div id="detection-overlay" class="detection-overlay"></div>
+            <div class="vision-hud">
+              <span>Vision</span>
+              <strong id="detection-count">0 marks</strong>
+            </div>
           </div>
 
           <div class="annotation-toolbar" aria-label="annotation tools">
@@ -48,7 +60,7 @@
           </div>
 
           <label class="field-label" for="prompt-input">Planner Prompt</label>
-          <textarea id="prompt-input" rows="4">Plan frozen food, fragile electronics, and machine parts from Osaka to Kyoto to Nagoya.</textarea>
+          <textarea id="prompt-input" rows="4" wrap="soft">Plan frozen food, fragile electronics, and machine parts from Osaka to Kyoto to Nagoya.</textarea>
           <button id="prompt-btn" class="primary-button" type="button">Generate Scenario</button>
 
           <div class="truck-picker">
@@ -80,6 +92,12 @@
                 <button id="optimize-btn" class="primary-button" type="button">Optimize</button>
                 <button id="export-json-btn" class="ghost-button" type="button">JSON</button>
               </div>
+            </div>
+
+            <div class="plan-meta" aria-label="load plan metrics">
+              <span>Bay A-04</span>
+              <span>Route: Osaka -> Kyoto -> Nagoya</span>
+              <span id="canvas-weight">0kg planned</span>
             </div>
 
             <div class="truck-layout-wrap">
@@ -128,6 +146,12 @@
             <option value="customer">Customer Skill</option>
             <option value="agent">Agent API</option>
           </select>
+          <div class="agent-pipeline" aria-label="agent pipeline">
+            <span>Vision</span>
+            <span>Plan</span>
+            <span>Skill</span>
+            <span>Export</span>
+          </div>
           <pre id="skill-output" class="skill-output"></pre>
         </aside>
       </section>
