@@ -7,153 +7,243 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <main class="app-shell">
-      <header class="topbar">
-        <div class="brand-lockup">
-          <span class="brand-mark" aria-hidden="true">DM</span>
-          <div>
-            <p class="eyebrow">Dynamic freight interface</p>
-            <h1>DockMind</h1>
+    <main class="site-shell">
+      <section class="hero" id="top">
+        <nav class="site-nav" aria-label="primary navigation">
+          <a class="wordmark" href="#top" aria-label="DockMind home">
+            <span>DockMind</span>
+            <small>AI load planning</small>
+          </a>
+          <div class="nav-links">
+            <a href="#goal">Goal</a>
+            <a href="#demo-video">Video</a>
+            <a href="#demo">Live app</a>
+          </div>
+        </nav>
+
+        <div class="hero-copy">
+          <p class="eyebrow">Warehouse vision to executable freight plans</p>
+          <h1>Plan the truck before anyone touches a box.</h1>
+          <p>
+            DockMind turns a warehouse photo into a truck layout, exception check,
+            3D plan, and loader agent skill.
+          </p>
+          <div class="hero-actions" aria-label="primary actions">
+            <a class="solid-link" href="#demo">Open planner</a>
+            <a class="text-link" href="#demo-video">Watch demo</a>
           </div>
         </div>
-        <div class="route-line" aria-label="active route">
-          <span>Osaka</span>
-          <span>Kyoto</span>
-          <span>Nagoya</span>
-        </div>
-        <div class="status-strip" aria-label="plan status">
-          <span id="status-cargo"><small>Cargo</small><strong>0</strong></span>
-          <span id="status-fit"><small>Fill</small><strong>0%</strong></span>
-          <span id="status-risk"><small>Risks</small><strong>0</strong></span>
-        </div>
-      </header>
 
-      <section class="workspace">
-        <aside class="panel input-panel" aria-label="warehouse input">
-          <div class="panel-head">
+        <div class="hero-metrics" aria-label="product outcomes">
+          <span><strong>Photo</strong> cargo intake</span>
+          <span><strong>4-ton</strong> truck constraints</span>
+          <span><strong>Agent</strong> loader skill</span>
+        </div>
+      </section>
+
+      <section class="goal-section" id="goal" aria-labelledby="goal-title">
+        <div class="section-copy">
+          <p class="eyebrow">Project goal</p>
+          <h2 id="goal-title">A simple daily loading plan from messy warehouse reality.</h2>
+        </div>
+        <div class="goal-text">
+          <p>
+            First-time loaders and ops teams lose time translating photos, labels,
+            destinations, fragile rules, cold-chain rules, and truck dimensions into
+            a sequence people can actually follow. DockMind compresses that work into
+            one visual plan.
+          </p>
+          <div class="goal-steps" aria-label="DockMind workflow">
+            <span><b>01</b> Detect cargo from photo or webcam</span>
+            <span><b>02</b> Fit boxes against truck constraints</span>
+            <span><b>03</b> Export a plan for humans and agents</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="showcase-section" aria-label="DockMind product output">
+        <div class="showcase-image">
+          <img src="assets/blender-preview.png" alt="3D loading plan rendered from DockMind cargo data">
+        </div>
+        <div class="showcase-copy">
+          <p class="eyebrow">Why it wins</p>
+          <h2>It is not another chatbot. It is a visual operating surface.</h2>
+          <p>
+            The demo connects computer vision, constraint planning, 3D output, and
+            role-specific agent instructions in one flow. Judges can see the truck,
+            the exceptions, and the agent skill at the same time.
+          </p>
+        </div>
+      </section>
+
+      <section class="video-section" id="demo-video" aria-labelledby="video-title">
+        <div class="section-copy">
+          <p class="eyebrow">YouTube demo</p>
+          <h2 id="video-title">Show the complete loop in under two minutes.</h2>
+        </div>
+        <a class="video-frame" href="https://www.youtube.com/" target="_blank" rel="noreferrer" aria-label="Open DockMind YouTube demo video">
+          <img src="assets/blender-preview.png" alt="DockMind demo video poster">
+          <span class="play-button" aria-hidden="true"></span>
+          <div class="video-caption">
+            <strong>DockMind product walkthrough</strong>
+            <small>Photo intake / truck layout / 3D plan / agent export</small>
+          </div>
+        </a>
+      </section>
+
+      <section class="demo-heading" id="demo" aria-label="Live DockMind planner">
+        <p class="eyebrow">Live product canvas</p>
+        <h2>Scan cargo, plan a truck, export the agent skill.</h2>
+      </section>
+
+      <section class="app-shell" aria-label="DockMind live application">
+        <header class="topbar">
+          <div class="brand-lockup">
+            <span class="brand-mark" aria-hidden="true">DM</span>
             <div>
-              <p class="eyebrow">Warehouse vision</p>
-              <h2>Cargo Intake</h2>
-            </div>
-            <button id="sample-detect-btn" class="ghost-button" type="button">Sample</button>
-          </div>
-
-          <label class="file-drop" for="image-input">
-            <input id="image-input" type="file" accept="image/*">
-            <span>Warehouse image</span>
-          </label>
-
-          <div class="vision-stage">
-            <img id="warehouse-image" src="assets/sample-warehouse.svg" alt="warehouse boxes with cargo tags">
-            <div id="detection-overlay" class="detection-overlay"></div>
-            <div class="vision-hud">
-              <span>Vision</span>
-              <strong id="detection-count">0 marks</strong>
+              <p class="eyebrow">Dynamic freight interface</p>
+              <h1>DockMind</h1>
             </div>
           </div>
-
-          <div class="annotation-toolbar" aria-label="annotation tools">
-            <button id="auto-detect-btn" class="ghost-button" type="button">YOLO</button>
-            <button id="draw-box-btn" class="ghost-button" type="button">Draw</button>
-            <button id="use-boxes-btn" class="primary-button" type="button">Use</button>
-            <button id="clear-detect-btn" class="ghost-button" type="button">Clear</button>
+          <div class="route-line" aria-label="active route">
+            <span>Osaka</span>
+            <span>Kyoto</span>
+            <span>Nagoya</span>
           </div>
-
-          <label class="field-label" for="prompt-input">Planner Prompt</label>
-          <textarea id="prompt-input" rows="4" wrap="soft">Plan frozen food, fragile electronics, and machine parts from Osaka to Kyoto to Nagoya.</textarea>
-          <button id="prompt-btn" class="primary-button" type="button">Generate Scenario</button>
-
-          <div class="truck-picker">
-            <label class="field-label" for="truck-select">Truck Model</label>
-            <select id="truck-select">
-              <option value="smallVan">Small van</option>
-              <option value="fourTon" selected>4-ton truck</option>
-              <option value="reefer">Refrigerated truck</option>
-            </select>
+          <div class="status-strip" aria-label="plan status">
+            <span id="status-cargo"><small>Cargo</small><strong>0</strong></span>
+            <span id="status-fit"><small>Fill</small><strong>0%</strong></span>
+            <span id="status-risk"><small>Risks</small><strong>0</strong></span>
           </div>
+        </header>
 
-          <div class="manifest-block">
-            <div class="panel-head compact">
-              <h3>Cargo Manifest</h3>
-              <button id="add-cargo-btn" class="ghost-button" type="button">Add</button>
-            </div>
-            <div id="manifest-list" class="manifest-list"></div>
-          </div>
-        </aside>
-
-        <section class="plan-surface" aria-label="truck planning surface">
-          <div class="layout-band">
+        <section class="workspace">
+          <aside class="panel input-panel" aria-label="warehouse input">
             <div class="panel-head">
               <div>
-                <p class="eyebrow">Constraint plan</p>
-                <h2 id="truck-title">4-ton truck</h2>
+                <p class="eyebrow">Warehouse vision</p>
+                <h2>Cargo Intake</h2>
               </div>
-              <div class="button-row">
-                <button id="optimize-btn" class="primary-button" type="button">Optimize</button>
-                <button id="export-json-btn" class="ghost-button" type="button">JSON</button>
+              <button id="sample-detect-btn" class="ghost-button" type="button">Sample</button>
+            </div>
+
+            <label class="file-drop" for="image-input">
+              <input id="image-input" type="file" accept="image/*">
+              <span>Warehouse image</span>
+            </label>
+
+            <div class="vision-stage">
+              <img id="warehouse-image" src="assets/sample-warehouse.svg" alt="warehouse boxes with cargo tags">
+              <div id="detection-overlay" class="detection-overlay"></div>
+              <div class="vision-hud">
+                <span>Vision</span>
+                <strong id="detection-count">0 marks</strong>
               </div>
             </div>
 
-            <div class="plan-meta" aria-label="load plan metrics">
-              <span>Bay A-04</span>
-              <span>Route: Osaka -> Kyoto -> Nagoya</span>
-              <span id="canvas-weight">0kg planned</span>
+            <div class="annotation-toolbar" aria-label="annotation tools">
+              <button id="auto-detect-btn" class="ghost-button" type="button">YOLO</button>
+              <button id="draw-box-btn" class="ghost-button" type="button">Draw</button>
+              <button id="use-boxes-btn" class="primary-button" type="button">Use</button>
+              <button id="clear-detect-btn" class="ghost-button" type="button">Clear</button>
             </div>
 
-            <div class="truck-layout-wrap">
-              <div class="truck-ruler">
-                <span>front</span>
-                <span>rear door</span>
+            <label class="field-label" for="prompt-input">Planner Prompt</label>
+            <textarea id="prompt-input" rows="4" wrap="soft">Plan frozen food, fragile electronics, and machine parts from Osaka to Kyoto to Nagoya.</textarea>
+            <button id="prompt-btn" class="primary-button" type="button">Generate Scenario</button>
+
+            <div class="truck-picker">
+              <label class="field-label" for="truck-select">Truck Model</label>
+              <select id="truck-select">
+                <option value="smallVan">Small van</option>
+                <option value="fourTon" selected>4-ton truck</option>
+                <option value="reefer">Refrigerated truck</option>
+              </select>
+            </div>
+
+            <div class="manifest-block">
+              <div class="panel-head compact">
+                <h3>Cargo Manifest</h3>
+                <button id="add-cargo-btn" class="ghost-button" type="button">Add</button>
               </div>
-              <div id="truck-layout" class="truck-layout" aria-label="2D truck layout"></div>
+              <div id="manifest-list" class="manifest-list"></div>
             </div>
+          </aside>
 
-            <div id="risk-list" class="risk-list"></div>
-          </div>
-
-          <div class="lower-grid">
-            <section class="panel blender-panel">
+          <section class="plan-surface" aria-label="truck planning surface">
+            <div class="layout-band">
               <div class="panel-head">
                 <div>
-                  <p class="eyebrow">Blender output</p>
-                  <h2>3D Loading Plan</h2>
+                  <p class="eyebrow">Constraint plan</p>
+                  <h2 id="truck-title">4-ton truck</h2>
                 </div>
-                <button id="export-blender-btn" class="ghost-button" type="button">Script</button>
+                <div class="button-row">
+                  <button id="optimize-btn" class="primary-button" type="button">Optimize</button>
+                  <button id="export-json-btn" class="ghost-button" type="button">JSON</button>
+                </div>
               </div>
-              <img id="blender-preview" src="assets/blender-preview.png" alt="3D truck loading render">
-              <p id="blender-note" class="muted-line">Render source: current cargo plan JSON.</p>
-            </section>
 
-            <section class="panel role-panel">
-              <div class="role-tabs" id="role-tabs" aria-label="role interface tabs"></div>
-              <div id="role-content" class="role-content"></div>
-            </section>
-          </div>
-        </section>
+              <div class="plan-meta" aria-label="load plan metrics">
+                <span>Bay A-04</span>
+                <span>Route: Osaka -> Kyoto -> Nagoya</span>
+                <span id="canvas-weight">0kg planned</span>
+              </div>
 
-        <aside class="panel agent-panel" aria-label="agent skills">
-          <div class="panel-head">
-            <div>
-              <p class="eyebrow">Company brain export</p>
-              <h2>Agent Skills</h2>
+              <div class="truck-layout-wrap">
+                <div class="truck-ruler">
+                  <span>front</span>
+                  <span>rear door</span>
+                </div>
+                <div id="truck-layout" class="truck-layout" aria-label="2D truck layout"></div>
+              </div>
+
+              <div id="risk-list" class="risk-list"></div>
             </div>
-            <button id="copy-skill-btn" class="ghost-button" type="button">Copy</button>
-          </div>
-          <select id="skill-select" class="skill-select" aria-label="skill selector">
-            <option value="loader">Loader Skill</option>
-            <option value="driver">Driver Skill</option>
-            <option value="ops">Ops Skill</option>
-            <option value="customer">Customer Skill</option>
-            <option value="agent">Agent API</option>
-          </select>
-          <div class="agent-pipeline" aria-label="agent pipeline">
-            <span>Vision</span>
-            <span>Plan</span>
-            <span>Skill</span>
-            <span>Export</span>
-          </div>
-          <pre id="skill-output" class="skill-output"></pre>
-        </aside>
+
+            <div class="lower-grid">
+              <section class="panel blender-panel">
+                <div class="panel-head">
+                  <div>
+                    <p class="eyebrow">Blender output</p>
+                    <h2>3D Loading Plan</h2>
+                  </div>
+                  <button id="export-blender-btn" class="ghost-button" type="button">Script</button>
+                </div>
+                <img id="blender-preview" src="assets/blender-preview.png" alt="3D truck loading render">
+                <p id="blender-note" class="muted-line">Render source: current cargo plan JSON.</p>
+              </section>
+
+              <section class="panel role-panel">
+                <div class="role-tabs" id="role-tabs" aria-label="role interface tabs"></div>
+                <div id="role-content" class="role-content"></div>
+              </section>
+            </div>
+          </section>
+
+          <aside class="panel agent-panel" aria-label="agent skills">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">Company brain export</p>
+                <h2>Agent Skills</h2>
+              </div>
+              <button id="copy-skill-btn" class="ghost-button" type="button">Copy</button>
+            </div>
+            <select id="skill-select" class="skill-select" aria-label="skill selector">
+              <option value="loader">Loader Skill</option>
+              <option value="driver">Driver Skill</option>
+              <option value="ops">Ops Skill</option>
+              <option value="customer">Customer Skill</option>
+              <option value="agent">Agent API</option>
+            </select>
+            <div class="agent-pipeline" aria-label="agent pipeline">
+              <span>Vision</span>
+              <span>Plan</span>
+              <span>Skill</span>
+              <span>Export</span>
+            </div>
+            <pre id="skill-output" class="skill-output"></pre>
+          </aside>
+        </section>
       </section>
     </main>
 

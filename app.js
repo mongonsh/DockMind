@@ -29,7 +29,7 @@ const truckPresets = {
 };
 
 const route = ["Osaka", "Kyoto", "Nagoya"];
-const colors = ["#245fbb", "#14724e", "#b96818", "#127581", "#6658a8", "#b43b32", "#344054"];
+const colors = ["#566979", "#6f5143", "#56614a", "#8a6f3d", "#4f5864", "#7a433c", "#4b5d58"];
 const roles = [
   { id: "loader", label: "Loader" },
   { id: "driver", label: "Driver" },
