@@ -7,7 +7,7 @@
     "dev": "python3 scripts/dockmind_server.py",
     "dev:static": "python3 -m http.server 4173",
     "dev:yolo": ".venv-yolo/bin/python scripts/dockmind_server.py",
-    "setup:yolo": "python3.12 -m venv .venv-yolo && .venv-yolo/bin/python -m pip install --upgrade pip ultralytics",
+    "setup:yolo": "python3.12 -m venv .venv-yolo && .venv-yolo/bin/python -m pip install --upgrade pip && .venv-yolo/bin/python -m pip install -r requirements.txt",
     "render:blender": "/Applications/Blender.app/Contents/MacOS/Blender --background --python scripts/generate_blender_plan.py -- data/sample-plan.json assets/blender-preview.png assets/dockmind-load-plan.glb",
     "detect:yolo": "python3 scripts/yolo_detect.py --image assets/sample-warehouse.svg --out data/yolo-detections.json"
   }

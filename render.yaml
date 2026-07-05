@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: dockmind
+    env: docker
+    plan: starter
+    autoDeploy: true
+    healthCheckPath: /api/config
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CRUSTDATA_API_KEY
+        sync: false
+      - key: SHISA_API_KEY
+        sync: false
+      - key: SHISA_API_URL
+        sync: false
+      - key: GBRAIN_ENABLED
+        value: "true"

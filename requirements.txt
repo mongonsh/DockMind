@@ -1,0 +1,2 @@
+ultralytics==8.4.87
+opencv-python-headless>=4.10.0.84

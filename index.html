@@ -132,6 +132,10 @@
               <span>Warehouse image</span>
             </label>
 
+            <div class="camera-stage" id="camera-stage" hidden>
+              <video id="camera-video" playsinline muted></video>
+            </div>
+
             <div class="vision-stage">
               <img id="warehouse-image" src="assets/sample-warehouse.svg" alt="warehouse boxes with cargo tags">
               <div id="detection-overlay" class="detection-overlay"></div>
@@ -142,9 +146,11 @@
             </div>
 
             <div class="annotation-toolbar" aria-label="annotation tools">
+              <button id="camera-start-btn" class="ghost-button" type="button">Camera</button>
+              <button id="camera-capture-btn" class="ghost-button" type="button" disabled>Capture</button>
               <button id="auto-detect-btn" class="ghost-button" type="button">YOLO</button>
+              <button id="analyze-cargo-btn" class="primary-button" type="button">Analyze</button>
               <button id="draw-box-btn" class="ghost-button" type="button">Draw</button>
-              <button id="use-boxes-btn" class="primary-button" type="button">Use</button>
               <button id="clear-detect-btn" class="ghost-button" type="button">Clear</button>
             </div>
 
@@ -241,6 +247,11 @@
               <span>Skill</span>
               <span>Export</span>
             </div>
+            <div class="agent-actions" aria-label="AI agent controls">
+              <button id="generate-skill-btn" class="primary-button" type="button">Generate Agent</button>
+              <button id="voice-agent-btn" class="ghost-button" type="button">Voice Agent</button>
+            </div>
+            <p id="agent-status" class="agent-status">Gemini/Shisa status: checking.</p>
             <pre id="skill-output" class="skill-output"></pre>
           </aside>
         </section>

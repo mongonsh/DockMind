@@ -55,6 +55,8 @@ let lastDetections = [];
 let drawingMode = false;
 let draftDetection = null;
 let detectionCounter = 0;
+let cameraStream = null;
+let generatedSkillText = "";
 const sampleImageSrc = "assets/sample-warehouse.svg";
 
 const el = {
@@ -66,10 +68,14 @@ const el = {
   imageInput: document.getElementById("image-input"),
   warehouseImage: document.getElementById("warehouse-image"),
   detectionOverlay: document.getElementById("detection-overlay"),
+  cameraStage: document.getElementById("camera-stage"),
+  cameraVideo: document.getElementById("camera-video"),
+  cameraStartBtn: document.getElementById("camera-start-btn"),
+  cameraCaptureBtn: document.getElementById("camera-capture-btn"),
   sampleDetectBtn: document.getElementById("sample-detect-btn"),
   autoDetectBtn: document.getElementById("auto-detect-btn"),
+  analyzeCargoBtn: document.getElementById("analyze-cargo-btn"),
   drawBoxBtn: document.getElementById("draw-box-btn"),
-  useBoxesBtn: document.getElementById("use-boxes-btn"),
   clearDetectBtn: document.getElementById("clear-detect-btn"),
   promptInput: document.getElementById("prompt-input"),
   promptBtn: document.getElementById("prompt-btn"),
@@ -86,6 +92,9 @@ const el = {
   roleContent: document.getElementById("role-content"),
   skillSelect: document.getElementById("skill-select"),
   skillOutput: document.getElementById("skill-output"),
+  generateSkillBtn: document.getElementById("generate-skill-btn"),
+  voiceAgentBtn: document.getElementById("voice-agent-btn"),
+  agentStatus: document.getElementById("agent-status"),
   copySkillBtn: document.getElementById("copy-skill-btn"),
   blenderPreview: document.getElementById("blender-preview"),
   blenderNote: document.getElementById("blender-note")
@@ -452,7 +461,7 @@ function publicPlan(plan) {
 }
 
 function renderSkill(plan) {
-  el.skillOutput.textContent = skillMarkdown(activeSkill, plan);
+  el.skillOutput.textContent = generatedSkillText || skillMarkdown(activeSkill, plan);
 }
 
 function clamp(value, min, max) {
@@ -769,7 +778,10 @@ async function yoloDetectCurrentImage(options = {}) {
   await waitForWarehouseImage();
 
   if (!el.warehouseImage.src.startsWith("data:image/")) {
-    await autoDetectCurrentImage(options);
+    await autoDetectCurrentImage({ ...options, syncCargo: options.syncCargo && options.syncCargo !== "ai" });
+    if (options.syncCargo === "ai") {
+      await analyzeCargoWithAI({ skipDetect: true });
+    }
     return;
   }
 
@@ -792,7 +804,12 @@ async function yoloDetectCurrentImage(options = {}) {
       throw new Error(data.error || "YOLO API failed");
     }
 
-    renderDetections(data.detections || [], { syncCargo: options.syncCargo && data.detections && data.detections.length > 0 });
+    renderDetections(data.detections || [], {
+      syncCargo: options.syncCargo && options.syncCargo !== "ai" && data.detections && data.detections.length > 0
+    });
+    if (options.syncCargo === "ai" && data.detections && data.detections.length > 0) {
+      await analyzeCargoWithAI({ skipDetect: true });
+    }
     el.autoDetectBtn.textContent = `YOLO ${(data.detections || []).length}`;
   } catch (error) {
     console.warn("YOLO unavailable, using fallback detector", error);
@@ -801,6 +818,203 @@ async function yoloDetectCurrentImage(options = {}) {
     el.autoDetectBtn.disabled = false;
     setTimeout(() => { el.autoDetectBtn.textContent = previousLabel === "YOLO..." ? "YOLO" : "YOLO"; }, 1400);
   }
+}
+
+async function startCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setAgentStatus("Camera API is not available in this browser.");
+    return;
+  }
+
+  if (!cameraStream) {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false
+    });
+    el.cameraVideo.srcObject = cameraStream;
+    await el.cameraVideo.play();
+  }
+
+  el.cameraStage.hidden = false;
+  el.cameraCaptureBtn.disabled = false;
+  el.cameraStartBtn.textContent = "Live";
+  setAgentStatus("Live camera ready. Capture a warehouse frame.");
+}
+
+async function captureCameraFrame() {
+  if (!cameraStream || !el.cameraVideo.videoWidth) return;
+  const canvas = document.createElement("canvas");
+  canvas.width = el.cameraVideo.videoWidth;
+  canvas.height = el.cameraVideo.videoHeight;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(el.cameraVideo, 0, 0, canvas.width, canvas.height);
+  el.warehouseImage.addEventListener("load", async () => {
+    await yoloDetectCurrentImage({ syncCargo: false });
+    await analyzeCargoWithAI();
+  }, { once: true });
+  el.warehouseImage.src = canvas.toDataURL("image/jpeg", 0.88);
+  setAgentStatus("Captured camera frame. Running YOLO and AI cargo analysis.");
+}
+
+async function analyzeCargoWithAI(options = {}) {
+  if (!options.skipDetect && !lastDetections.filter(detection => !detection.draft).length) {
+    await yoloDetectCurrentImage({ syncCargo: false });
+  }
+
+  const detections = lastDetections.filter(detection => !detection.draft);
+  if (!detections.length) {
+    setAgentStatus("No cargo detections to analyze yet.");
+    return;
+  }
+
+  const previous = el.analyzeCargoBtn.textContent;
+  el.analyzeCargoBtn.disabled = true;
+  el.analyzeCargoBtn.textContent = "Analyzing";
+  try {
+    const response = await fetch("/api/analyze-cargo", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        detections,
+        prompt: el.promptInput.value,
+        route,
+        truck: truckPresets[activeTruckId]
+      })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "analysis failed");
+    if (Array.isArray(data.cargo) && data.cargo.length) {
+      cargo = data.cargo;
+      generatedSkillText = "";
+      renderAll();
+      setAgentStatus(`${data.source === "gemini" ? "Gemini" : "Local"} cargo analysis created ${cargo.length} manifest items.`);
+    }
+  } catch (error) {
+    console.warn("Cargo analysis failed", error);
+    syncCargoFromDetections();
+    setAgentStatus("AI analysis failed, used local detection geometry.");
+  } finally {
+    el.analyzeCargoBtn.disabled = false;
+    el.analyzeCargoBtn.textContent = previous;
+  }
+}
+
+async function generateAgentSkill() {
+  const previous = el.generateSkillBtn.textContent;
+  el.generateSkillBtn.disabled = true;
+  el.generateSkillBtn.textContent = "Generating";
+  try {
+    const response = await fetch("/api/agent-skill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: activeSkill, plan: publicPlan(currentPlan) })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "skill generation failed");
+    generatedSkillText = data.skill;
+    renderSkill(currentPlan);
+    setAgentStatus(`${data.source === "gemini" ? "Gemini" : "Local"} generated ${activeSkill} skill.`);
+  } catch (error) {
+    console.warn("Agent generation failed", error);
+    generatedSkillText = skillMarkdown(activeSkill, currentPlan);
+    renderSkill(currentPlan);
+    setAgentStatus("Agent generation failed, showing local skill.");
+  } finally {
+    el.generateSkillBtn.disabled = false;
+    el.generateSkillBtn.textContent = previous;
+  }
+}
+
+function setAgentStatus(message) {
+  el.agentStatus.textContent = message;
+}
+
+async function checkRuntimeConfig() {
+  try {
+    const response = await fetch("/api/config");
+    const config = await response.json();
+    const flags = [
+      config.gemini || config.vertex ? "Google AI on" : "Google AI off",
+      config.shisa ? "Shisa on" : "Browser voice",
+      config.crustdata ? "Crustdata key present" : "Crustdata off",
+      config.gbrain ? "gbrain marked" : "gbrain CLI missing"
+    ];
+    setAgentStatus(flags.join(" / "));
+  } catch {
+    setAgentStatus("Runtime config unavailable.");
+  }
+}
+
+function speak(message) {
+  if (!("speechSynthesis" in window)) return;
+  const utterance = new SpeechSynthesisUtterance(message);
+  utterance.rate = 0.95;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
+async function parseAndRunVoiceCommand(transcript) {
+  setAgentStatus(`Voice: ${transcript}`);
+  try {
+    const response = await fetch("/api/voice-command", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript, plan: publicPlan(currentPlan) })
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "voice parse failed");
+    await runVoiceCommand(data.command);
+    speak(data.command.spokenResponse || "Done.");
+  } catch (error) {
+    console.warn("Voice command failed", error);
+    speak("I could not run that DockMind command.");
+  }
+}
+
+async function runVoiceCommand(command) {
+  if (command.truckId && truckPresets[command.truckId]) {
+    activeTruckId = command.truckId;
+    el.truckSelect.value = command.truckId;
+  }
+  if (command.role && roles.some(role => role.id === command.role)) {
+    activeRole = command.role;
+    activeSkill = command.role;
+    el.skillSelect.value = command.role;
+  }
+
+  if (command.intent === "detect") {
+    await yoloDetectCurrentImage({ syncCargo: false });
+  } else if (command.intent === "analyze") {
+    await analyzeCargoWithAI();
+  } else if (command.intent === "set_truck" || command.intent === "optimize") {
+    generatedSkillText = "";
+    renderAll();
+  } else if (command.intent === "generate_agent") {
+    renderAll();
+    await generateAgentSkill();
+  }
+  setAgentStatus(command.spokenResponse || "Voice command complete.");
+}
+
+function startVoiceAgent() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    const transcript = window.prompt("Voice agent fallback: type a DockMind command");
+    if (transcript) parseAndRunVoiceCommand(transcript);
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.onstart = () => setAgentStatus("Listening for DockMind voice command.");
+  recognition.onerror = event => setAgentStatus(`Voice error: ${event.error}`);
+  recognition.onresult = event => {
+    const transcript = event.results[0][0].transcript;
+    parseAndRunVoiceCommand(transcript);
+  };
+  recognition.start();
 }
 
 function runPromptScenario() {
@@ -816,6 +1030,7 @@ function runPromptScenario() {
     { id: "DRY-04", label: "Dry goods", length: 85, width: 50, height: 50, weight: 26, stop: "Kyoto", tags: [] },
     { id: "MED-05", label: "Medical samples", length: 60, width: 45, height: 42, weight: 12, stop: "Nagoya", tags: ["cold", "fragile"] }
   ];
+  generatedSkillText = "";
   renderAll();
 }
 
@@ -832,6 +1047,7 @@ function addCargo() {
     stop,
     tags: next % 3 === 0 ? ["fragile"] : []
   });
+  generatedSkillText = "";
   renderAll();
 }
 
@@ -874,21 +1090,19 @@ el.imageInput.addEventListener("change", event => {
   reader.onload = () => {
     setDrawingMode(false);
     el.warehouseImage.addEventListener("load", () => {
-      yoloDetectCurrentImage({ syncCargo: true });
+      yoloDetectCurrentImage({ syncCargo: false }).then(() => analyzeCargoWithAI());
     }, { once: true });
     el.warehouseImage.src = reader.result;
   };
   reader.readAsDataURL(file);
 });
 
+el.cameraStartBtn.addEventListener("click", () => startCamera().catch(error => setAgentStatus(`Camera failed: ${error.message}`)));
+el.cameraCaptureBtn.addEventListener("click", () => captureCameraFrame().catch(error => setAgentStatus(`Capture failed: ${error.message}`)));
 el.sampleDetectBtn.addEventListener("click", loadSampleDetection);
-el.autoDetectBtn.addEventListener("click", () => yoloDetectCurrentImage({ syncCargo: true }));
+el.autoDetectBtn.addEventListener("click", () => yoloDetectCurrentImage({ syncCargo: "ai" }));
+el.analyzeCargoBtn.addEventListener("click", analyzeCargoWithAI);
 el.drawBoxBtn.addEventListener("click", () => setDrawingMode(!drawingMode));
-el.useBoxesBtn.addEventListener("click", () => {
-  syncCargoFromDetections();
-  el.useBoxesBtn.textContent = "Used";
-  setTimeout(() => { el.useBoxesBtn.textContent = "Use"; }, 1000);
-});
 el.clearDetectBtn.addEventListener("click", () => {
   setDrawingMode(false);
   renderDetections([]);
@@ -896,15 +1110,22 @@ el.clearDetectBtn.addEventListener("click", () => {
 el.promptBtn.addEventListener("click", runPromptScenario);
 el.truckSelect.addEventListener("change", event => {
   activeTruckId = event.target.value;
+  generatedSkillText = "";
   renderAll();
 });
-el.optimizeBtn.addEventListener("click", renderAll);
+el.optimizeBtn.addEventListener("click", () => {
+  generatedSkillText = "";
+  renderAll();
+});
 el.addCargoBtn.addEventListener("click", addCargo);
 el.skillSelect.addEventListener("change", event => {
   activeSkill = event.target.value;
   activeRole = roles.some(role => role.id === activeSkill) ? activeSkill : activeRole;
+  generatedSkillText = "";
   renderAll();
 });
+el.generateSkillBtn.addEventListener("click", generateAgentSkill);
+el.voiceAgentBtn.addEventListener("click", startVoiceAgent);
 el.copySkillBtn.addEventListener("click", async () => {
   await navigator.clipboard.writeText(el.skillOutput.textContent);
   el.copySkillBtn.textContent = "Copied";
@@ -971,3 +1192,4 @@ el.detectionOverlay.addEventListener("pointerup", event => {
 
 loadSampleDetection();
 renderAll();
+checkRuntimeConfig();

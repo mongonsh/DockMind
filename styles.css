@@ -677,6 +677,21 @@ a:focus-visible {
   background: #141618;
 }
 
+.camera-stage {
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  margin-bottom: 12px;
+  border: 1px solid #1b1d1e;
+  border-radius: 8px;
+  background: #090a0b;
+}
+
+.camera-stage video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .vision-stage img {
   width: 100%;
   height: 100%;
@@ -768,7 +783,7 @@ a:focus-visible {
 
 .annotation-toolbar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   margin: 0 0 14px;
 }
@@ -1223,6 +1238,27 @@ select {
   font-weight: 950;
   text-align: center;
   text-transform: uppercase;
+}
+
+.agent-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.agent-actions .primary-button,
+.agent-actions .ghost-button {
+  min-width: 0;
+  padding-inline: 8px;
+}
+
+.agent-status {
+  min-height: 20px;
+  margin: 0 0 10px;
+  color: rgba(255, 253, 247, 0.64);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .skill-output {
