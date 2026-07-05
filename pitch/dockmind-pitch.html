@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>DockMind Pitch Deck</title>
+    <style>
+      :root {
+        --ink: #111315;
+        --paper: #f7f2e9;
+        --muted: #6f6a61;
+        --line: rgba(17, 19, 21, 0.16);
+        --teal: #1b8a7d;
+        --copper: #b56a3d;
+        --cream: #fffaf1;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: #0d0f10;
+        color: var(--ink);
+        font-family: "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+      }
+
+      main {
+        display: grid;
+        gap: 18px;
+        padding: 18px;
+      }
+
+      .slide {
+        position: relative;
+        width: min(100%, 1500px);
+        aspect-ratio: 16 / 9;
+        margin: 0 auto;
+        overflow: hidden;
+        border-radius: 8px;
+        background: var(--paper);
+        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.38);
+      }
+
+      .slide.dark {
+        background: var(--ink);
+        color: var(--cream);
+      }
+
+      .slide img.bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .shade {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(9, 10, 10, 0.88), rgba(9, 10, 10, 0.46) 48%, rgba(9, 10, 10, 0.06));
+      }
+
+      .content {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+        padding: 74px 86px;
+      }
+
+      .split {
+        display: grid;
+        grid-template-columns: 0.9fr 1.1fr;
+        gap: 54px;
+        align-items: center;
+        height: 100%;
+        padding: 62px 72px;
+      }
+
+      .eyebrow {
+        margin: 0 0 18px;
+        color: var(--copper);
+        font-size: 20px;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .dark .eyebrow {
+        color: #d9b88a;
+      }
+
+      h1,
+      h2 {
+        margin: 0;
+        letter-spacing: 0;
+      }
+
+      h1 {
+        max-width: 850px;
+        font-size: 84px;
+        line-height: 0.94;
+      }
+
+      h2 {
+        font-size: 58px;
+        line-height: 1.02;
+      }
+
+      p {
+        max-width: 720px;
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: 28px;
+        line-height: 1.28;
+      }
+
+      .dark p {
+        color: rgba(255, 250, 241, 0.78);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+        margin-top: 42px;
+      }
+
+      .card {
+        min-height: 190px;
+        padding: 26px;
+        border: 1px solid var(--line);
+        background: var(--cream);
+      }
+
+      .card strong {
+        display: block;
+        font-size: 31px;
+        line-height: 1.04;
+      }
+
+      .card span {
+        display: block;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 20px;
+        line-height: 1.28;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+        margin-top: 42px;
+      }
+
+      .step {
+        padding: 20px;
+        border: 1px solid rgba(255, 250, 241, 0.2);
+        background: rgba(255, 250, 241, 0.08);
+      }
+
+      .step b {
+        color: #7ee2d5;
+        font-size: 22px;
+      }
+
+      .step span {
+        display: block;
+        margin-top: 14px;
+        font-size: 23px;
+        line-height: 1.15;
+      }
+
+      .visual {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        background: #17191b;
+      }
+
+      .visual img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .quote {
+        max-width: 980px;
+        font-size: 48px;
+        line-height: 1.12;
+        color: var(--ink);
+      }
+
+      .demo-actions {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+        margin-top: 42px;
+      }
+
+      .demo-actions span {
+        padding: 18px 14px;
+        border: 1px solid var(--line);
+        background: var(--cream);
+        font-size: 20px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .footer {
+        position: absolute;
+        left: 86px;
+        right: 86px;
+        bottom: 42px;
+        display: flex;
+        justify-content: space-between;
+        color: rgba(255, 250, 241, 0.58);
+        font-size: 16px;
+        font-weight: 900;
+      }
+
+      @media print {
+        body {
+          background: white;
+        }
+        main {
+          display: block;
+          padding: 0;
+        }
+        .slide {
+          width: 100vw;
+          height: 100vh;
+          margin: 0;
+          page-break-after: always;
+          border-radius: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="slide dark">
+        <img class="bg" src="../assets/pitch/dockmind-command-center.png" alt="">
+        <div class="shade"></div>
+        <div class="content">
+          <p class="eyebrow">DockMind</p>
+          <h1>The company brain for the loading dock.</h1>
+          <p>Camera in. Truck plan out. Agent skill ready.</p>
+        </div>
+        <div class="footer"><span>YC RFS fit: Company Brain + Software for Agents</span><span>Live demo</span></div>
+      </section>
+
+      <section class="slide">
+        <div class="content">
+          <p class="eyebrow">The pain</p>
+          <h2>Loading still depends on tribal knowledge at the worst possible moment.</h2>
+          <div class="cards">
+            <div class="card"><strong>Cargo is visual</strong><span>Teams start from photos, pallets, labels, and incomplete dimensions.</span></div>
+            <div class="card"><strong>Trucks are physical</strong><span>Cold-chain, route order, weight, and space all collide.</span></div>
+            <div class="card"><strong>Agents need structure</strong><span>A chatbot cannot load a truck unless the plan becomes executable.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide dark">
+        <img class="bg" src="../assets/pitch/dockmind-hero.png" alt="">
+        <div class="shade"></div>
+        <div class="content">
+          <p class="eyebrow">The loop</p>
+          <h2>One warehouse frame becomes an operating plan.</h2>
+          <div class="flow">
+            <div class="step"><b>01</b><span>Camera detects cargo</span></div>
+            <div class="step"><b>02</b><span>Qwen creates manifest</span></div>
+            <div class="step"><b>03</b><span>Truck layout updates</span></div>
+            <div class="step"><b>04</b><span>gstack skill exports</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="split">
+          <div>
+            <p class="eyebrow">Dynamic interface</p>
+            <h2>The same plan becomes a different UI for every role.</h2>
+            <p>Loaders see bay positions. Drivers see unload order. Ops sees exceptions. Customers see safe status.</p>
+          </div>
+          <div class="visual">
+            <img src="../assets/pitch/dockmind-workflow.png" alt="DockMind logistics interfaces in warehouse">
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <div class="content">
+          <p class="eyebrow">Live demo path</p>
+          <h2>Show the product, not a mockup.</h2>
+          <div class="demo-actions">
+            <span>Camera</span>
+            <span>Capture</span>
+            <span>YOLO</span>
+            <span>Analyze</span>
+            <span>Generate Agent</span>
+          </div>
+          <p>Say: "The wedge is simple. One warehouse photo becomes the loading plan."</p>
+        </div>
+      </section>
+
+      <section class="slide dark">
+        <img class="bg" src="../assets/pitch/dockmind-command-center.png" alt="">
+        <div class="shade"></div>
+        <div class="content">
+          <p class="eyebrow">Why this can win</p>
+          <h2>DockMind makes AI useful where software usually stops: physical work.</h2>
+          <p>It combines real vision, constraint planning, dynamic role UIs, and executable agent skills in one visible flow.</p>
+        </div>
+        <div class="footer"><span>DockMind</span><span>Company brain for logistics operations</span></div>
+      </section>
+    </main>
+  </body>
+</html>
