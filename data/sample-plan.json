@@ -1,0 +1,66 @@
+{
+  "route": ["Osaka", "Kyoto", "Nagoya"],
+  "truck": "fourTon",
+  "cargo": [
+    {
+      "id": "FRZ-01",
+      "label": "Frozen food",
+      "length": 90,
+      "width": 60,
+      "height": 55,
+      "weight": 42,
+      "stop": "Kyoto",
+      "tags": ["cold"]
+    },
+    {
+      "id": "FRG-02",
+      "label": "Fragile electronics",
+      "length": 70,
+      "width": 50,
+      "height": 45,
+      "weight": 18,
+      "stop": "Nagoya",
+      "tags": ["fragile"]
+    },
+    {
+      "id": "MCH-03",
+      "label": "Machine parts",
+      "length": 110,
+      "width": 70,
+      "height": 65,
+      "weight": 95,
+      "stop": "Nagoya",
+      "tags": ["heavy"]
+    },
+    {
+      "id": "DRY-04",
+      "label": "Dry goods",
+      "length": 85,
+      "width": 50,
+      "height": 50,
+      "weight": 26,
+      "stop": "Kyoto",
+      "tags": []
+    },
+    {
+      "id": "MED-05",
+      "label": "Medical samples",
+      "length": 60,
+      "width": 45,
+      "height": 42,
+      "weight": 12,
+      "stop": "Nagoya",
+      "tags": ["cold", "fragile"]
+    },
+    {
+      "id": "RET-06",
+      "label": "Retail cartons",
+      "length": 75,
+      "width": 55,
+      "height": 48,
+      "weight": 31,
+      "stop": "Kyoto",
+      "tags": []
+    }
+  ]
+}

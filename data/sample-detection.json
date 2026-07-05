@@ -1,0 +1,50 @@
+{
+  "source": "sample-warehouse",
+  "detections": [
+    {
+      "id": "FRZ-01",
+      "label": "FRZ-01 90x60x55 42kg",
+      "x": 9,
+      "y": 15,
+      "w": 25,
+      "h": 27,
+      "confidence": 0.91
+    },
+    {
+      "id": "FRG-02",
+      "label": "FRAGILE 70x50x45 18kg",
+      "x": 35,
+      "y": 22,
+      "w": 21,
+      "h": 24,
+      "confidence": 0.88
+    },
+    {
+      "id": "MCH-03",
+      "label": "HEAVY 110x70x65 95kg",
+      "x": 58,
+      "y": 14,
+      "w": 29,
+      "h": 34,
+      "confidence": 0.86
+    },
+    {
+      "id": "MED-05",
+      "label": "COLD FRAGILE 60x45x42",
+      "x": 18,
+      "y": 52,
+      "w": 19,
+      "h": 25,
+      "confidence": 0.82
+    },
+    {
+      "id": "RET-06",
+      "label": "STOP: Kyoto 75x55x48",
+      "x": 66,
+      "y": 52,
+      "w": 21,
+      "h": 26,
+      "confidence": 0.8
+    }
+  ]
+}

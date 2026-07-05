@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" role="img" aria-label="3D loading plan preview">
+  <rect width="1200" height="750" fill="#edf2f7"/>
+  <g transform="translate(120 150)">
+    <polygon points="0,320 720,160 960,270 240,470" fill="#cbd5e1"/>
+    <polygon points="80,210 760,80 900,160 220,300" fill="#f8fafc" stroke="#334155" stroke-width="8"/>
+    <polygon points="220,300 900,160 900,250 220,390" fill="#e2e8f0" stroke="#334155" stroke-width="8"/>
+    <polygon points="80,210 220,300 220,390 80,300" fill="#dbe3ed" stroke="#334155" stroke-width="8"/>
+    <g stroke="#1f2937" stroke-width="4">
+      <g>
+        <polygon points="160,205 270,184 324,215 214,238" fill="#1f6feb"/>
+        <polygon points="214,238 324,215 324,285 214,309" fill="#1a56c5"/>
+        <polygon points="160,205 214,238 214,309 160,275" fill="#2f80ed"/>
+      </g>
+      <g>
+        <polygon points="310,176 420,154 476,186 366,209" fill="#168a4a"/>
+        <polygon points="366,209 476,186 476,258 366,282" fill="#116a39"/>
+        <polygon points="310,176 366,209 366,282 310,246" fill="#20a35a"/>
+      </g>
+      <g>
+        <polygon points="465,146 610,118 680,158 535,188" fill="#b56a00"/>
+        <polygon points="535,188 680,158 680,250 535,281" fill="#8d5300"/>
+        <polygon points="465,146 535,188 535,281 465,238" fill="#d17a00"/>
+      </g>
+      <g>
+        <polygon points="245,265 350,244 405,276 300,298" fill="#047481"/>
+        <polygon points="300,298 405,276 405,340 300,364" fill="#065d67"/>
+        <polygon points="245,265 300,298 300,364 245,331" fill="#0a8c9a"/>
+      </g>
+      <g>
+        <polygon points="455,250 570,226 632,260 518,285" fill="#6b4eff"/>
+        <polygon points="518,285 632,260 632,333 518,358" fill="#523ac7"/>
+        <polygon points="455,250 518,285 518,358 455,322" fill="#7d66ff"/>
+      </g>
+    </g>
+  </g>
+  <text x="92" y="93" fill="#111827" font-family="Arial, sans-serif" font-size="52" font-weight="800">DockMind 3D Loading Plan</text>
+  <text x="94" y="140" fill="#526173" font-family="Arial, sans-serif" font-size="24">Blender render fallback preview</text>
+</svg>
