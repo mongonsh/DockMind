@@ -887,7 +887,7 @@ async function analyzeCargoWithAI(options = {}) {
       cargo = data.cargo;
       generatedSkillText = "";
       renderAll();
-      setAgentStatus(`${data.source === "gemini" ? "Gemini" : "Local"} cargo analysis created ${cargo.length} manifest items.`);
+      setAgentStatus(`${data.source === "qwen" ? "Qwen" : data.source === "gemini" ? "Gemini" : "Local"} cargo analysis created ${cargo.length} manifest items.`);
     }
   } catch (error) {
     console.warn("Cargo analysis failed", error);
@@ -913,7 +913,7 @@ async function generateAgentSkill() {
     if (!response.ok) throw new Error(data.error || "skill generation failed");
     generatedSkillText = data.skill;
     renderSkill(currentPlan);
-    setAgentStatus(`${data.source === "gemini" ? "Gemini" : "Local"} generated ${activeSkill} skill.`);
+    setAgentStatus(`${data.source === "qwen" ? "Qwen" : data.source === "gemini" ? "Gemini" : "Local"} generated ${activeSkill} skill.`);
   } catch (error) {
     console.warn("Agent generation failed", error);
     generatedSkillText = skillMarkdown(activeSkill, currentPlan);
@@ -934,7 +934,7 @@ async function checkRuntimeConfig() {
     const response = await fetch("/api/config");
     const config = await response.json();
     const flags = [
-      config.gemini || config.vertex ? "Google AI on" : "Google AI off",
+      config.qwen ? "Qwen on" : config.gemini || config.vertex ? "Google AI on" : "AI off",
       config.shisa ? "Shisa on" : "Browser voice",
       config.crustdata ? "Crustdata key present" : "Crustdata off",
       config.gbrain ? "gbrain marked" : "gbrain CLI missing"

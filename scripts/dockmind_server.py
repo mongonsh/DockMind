@@ -43,6 +43,16 @@ GEMINI_MODELS = tuple(
     for model in os.environ.get("GEMINI_MODEL", ",".join(DEFAULT_GEMINI_MODELS)).split(",")
     if model.strip()
 )
+DEFAULT_QWEN_MODELS = ("qwen-plus", "qwen-turbo", "qwen-max")
+QWEN_MODELS = tuple(
+    model.strip()
+    for model in os.environ.get("QWEN_MODEL", ",".join(DEFAULT_QWEN_MODELS)).split(",")
+    if model.strip()
+)
+DEFAULT_QWEN_ENDPOINTS = (
+    "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+)
 
 
 def _extension_for_data_url(header: str) -> str:
@@ -75,6 +85,7 @@ class DockMindHandler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == "/api/config":
             self._json({
+                "qwen": bool(_qwen_api_key()),
                 "gemini": bool(os.environ.get("GEMINI_API_KEY")),
                 "vertex": bool(os.environ.get("GOOGLE_CLOUD_ACCESS_TOKEN") and (
                     os.environ.get("GOOGLE_CLOUD_PROJECT_ID") or os.environ.get("GOOGLE_CLOUD_PROJECT")
@@ -179,8 +190,8 @@ class DockMindHandler(SimpleHTTPRequestHandler):
             return
 
         try:
-            cargo = _gemini_cargo_manifest(detections, prompt, route)
-            self._json({"source": "gemini", "cargo": cargo})
+            source, cargo = _ai_cargo_manifest(detections, prompt, route)
+            self._json({"source": source, "cargo": cargo})
         except Exception as exc:  # noqa: BLE001 - local demo should keep working.
             cargo = _local_cargo_manifest(detections, prompt, route)
             self._json({"source": "local", "warning": str(exc), "cargo": cargo})
@@ -195,8 +206,8 @@ class DockMindHandler(SimpleHTTPRequestHandler):
             return
 
         try:
-            skill = _gemini_agent_skill(kind, plan)
-            self._json({"source": "gemini", "skill": skill})
+            source, skill = _ai_agent_skill(kind, plan)
+            self._json({"source": source, "skill": skill})
         except Exception as exc:  # noqa: BLE001
             self._json({"source": "local", "warning": str(exc), "skill": _local_agent_skill(kind, plan)})
 
@@ -210,8 +221,8 @@ class DockMindHandler(SimpleHTTPRequestHandler):
             return
 
         try:
-            command = _gemini_voice_command(transcript, plan)
-            self._json({"source": "gemini", "command": command})
+            source, command = _ai_voice_command(transcript, plan)
+            self._json({"source": source, "command": command})
         except Exception as exc:  # noqa: BLE001
             self._json({"source": "local", "warning": str(exc), "command": _local_voice_command(transcript)})
 
@@ -245,6 +256,79 @@ class DockMindHandler(SimpleHTTPRequestHandler):
             self._json({"source": "crustdata", "data": data})
         except (HTTPError, URLError, TimeoutError, json.JSONDecodeError) as exc:
             self._json({"source": "crustdata", "error": str(exc)}, HTTPStatus.BAD_GATEWAY)
+
+
+def _qwen_api_key() -> str:
+    return os.environ.get("QWEN_API_KEY") or os.environ.get("DASHSCOPE_API_KEY") or ""
+
+
+def _qwen_endpoints() -> tuple[str, ...]:
+    configured = (
+        os.environ.get("QWEN_API_URL")
+        or os.environ.get("QWEN_BASE_URL")
+        or os.environ.get("DASHSCOPE_API_URL")
+        or os.environ.get("DASHSCOPE_BASE_URL")
+    )
+    if not configured:
+        return DEFAULT_QWEN_ENDPOINTS
+
+    endpoint = configured.rstrip("/")
+    if endpoint.endswith("/chat/completions"):
+        return (endpoint,)
+    if endpoint.endswith("/v1"):
+        return (f"{endpoint}/chat/completions",)
+    return (f"{endpoint}/compatible-mode/v1/chat/completions",)
+
+
+def _ai_text(prompt: str) -> tuple[str, str]:
+    if _qwen_api_key():
+        return "qwen", _qwen_text(prompt)
+    return "gemini", _gemini_text(prompt)
+
+
+def _qwen_text(prompt: str) -> str:
+    api_key = _qwen_api_key()
+    if not api_key:
+        raise RuntimeError("QWEN_API_KEY is not configured")
+
+    timeout = int(os.environ.get("AGENT_BUILDER_TIMEOUT_MS", "15000")) / 1000
+    errors: list[str] = []
+    for endpoint in _qwen_endpoints():
+        for model in QWEN_MODELS:
+            body = {
+                "model": model,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are DockMind's logistics AI. Return strict JSON only.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.2,
+                "response_format": {"type": "json_object"},
+            }
+            req = Request(
+                endpoint,
+                data=json.dumps(body).encode("utf-8"),
+                headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+                method="POST",
+            )
+            try:
+                with urlopen(req, timeout=timeout) as response:  # noqa: S310
+                    data = json.loads(response.read().decode("utf-8"))
+                choices = data.get("choices") or []
+                message = choices[0].get("message", {}) if choices else {}
+                text = str(message.get("content") or "")
+                if text:
+                    return text
+                raise RuntimeError(f"{model}: Qwen returned no text")
+            except HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="ignore")[:240]
+                errors.append(f"{model}@{endpoint}: HTTP {exc.code} {detail}")
+            except Exception as exc:  # noqa: BLE001 - try next model/endpoint.
+                errors.append(f"{model}@{endpoint}: {exc.__class__.__name__}: {exc}")
+
+    raise RuntimeError("Qwen failed for configured models: " + " | ".join(errors))
 
 
 def _gemini_text(prompt: str) -> str:
@@ -321,8 +405,8 @@ def _json_from_model(text: str) -> Any:
     return json.loads(stripped)
 
 
-def _gemini_cargo_manifest(detections: list[dict], prompt: str, route: list[str]) -> list[dict]:
-    text = _gemini_text(
+def _ai_cargo_manifest(detections: list[dict], prompt: str, route: list[str]) -> tuple[str, list[dict]]:
+    source, text = _ai_text(
         "You are DockMind, an AI logistics planner. Convert real YOLO cargo detections "
         "into a plausible cargo manifest for truck loading. Use the detection geometry "
         "as evidence; do not invent more boxes than detections. Return ONLY JSON: "
@@ -333,11 +417,11 @@ def _gemini_cargo_manifest(detections: list[dict], prompt: str, route: list[str]
         f"Detections: {json.dumps(detections, ensure_ascii=False)}"
     )
     data = _json_from_model(text)
-    return _normalize_cargo_list(data.get("cargo", []), detections, route)
+    return source, _normalize_cargo_list(data.get("cargo", []), detections, route)
 
 
-def _gemini_agent_skill(kind: str, plan: dict) -> str:
-    text = _gemini_text(
+def _ai_agent_skill(kind: str, plan: dict) -> tuple[str, str]:
+    source, text = _ai_text(
         "Create a gstack-compatible SKILL.md for a DockMind logistics agent. "
         "Return JSON only: {\"skill\":\"...markdown...\"}. The skill must include "
         "frontmatter name/description, goal, inputs, steps, safety checks, and done criteria. "
@@ -346,19 +430,19 @@ def _gemini_agent_skill(kind: str, plan: dict) -> str:
     data = _json_from_model(text)
     skill = str(data.get("skill") or "")
     if not skill:
-        raise RuntimeError("Gemini returned no skill")
-    return skill
+        raise RuntimeError(f"{source} returned no skill")
+    return source, _normalize_skill_markdown(kind, skill)
 
 
-def _gemini_voice_command(transcript: str, plan: dict) -> dict:
-    text = _gemini_text(
+def _ai_voice_command(transcript: str, plan: dict) -> tuple[str, dict]:
+    source, text = _ai_text(
         "Parse a warehouse voice command for DockMind. Return JSON only with keys: "
         "intent (detect|analyze|optimize|set_truck|generate_agent|unknown), "
         "truckId (smallVan|fourTon|reefer|null), spokenResponse, role (loader|driver|ops|customer|agent|null). "
         f"Transcript: {transcript}\nCurrent plan metrics: {json.dumps(plan.get('metrics', {}), ensure_ascii=False)}"
     )
     data = _json_from_model(text)
-    return {
+    return source, {
         "intent": str(data.get("intent") or "unknown"),
         "truckId": data.get("truckId"),
         "role": data.get("role"),
@@ -372,15 +456,24 @@ def _normalize_cargo_list(cargo: list[dict], detections: list[dict], route: list
         detection = detections[index] if index < len(detections) else {}
         stop = item.get("stop") if item.get("stop") in route else route[min(len(route) - 1, 1 + (index % max(1, len(route) - 1)))]
         tags = item.get("tags") if isinstance(item.get("tags"), list) else []
+        label = str(item.get("label") or detection.get("label") or "Detected cargo")[:48]
+        label_lower = label.lower()
+        inferred_tags = set(str(tag).lower() for tag in tags)
+        if any(word in label_lower for word in ("frozen", "cold", "chilled", "medical")):
+            inferred_tags.add("cold")
+        if any(word in label_lower for word in ("fragile", "glass", "electronics")):
+            inferred_tags.add("fragile")
+        if any(word in label_lower for word in ("machine", "heavy", "parts")):
+            inferred_tags.add("heavy")
         normalized.append({
             "id": str(item.get("id") or detection.get("id") or f"BOX-{index + 1:02d}")[:18],
-            "label": str(item.get("label") or detection.get("label") or "Detected cargo")[:48],
+            "label": label,
             "length": _bounded_int(item.get("length"), 45, 140, 70),
             "width": _bounded_int(item.get("width"), 35, 95, 50),
             "height": _bounded_int(item.get("height"), 32, 95, 45),
             "weight": _bounded_int(item.get("weight"), 8, 140, 24),
             "stop": stop,
-            "tags": [str(tag).lower() for tag in tags if str(tag).lower() in {"cold", "fragile", "heavy"}],
+            "tags": [tag for tag in ("cold", "fragile", "heavy") if tag in inferred_tags],
         })
     if normalized:
         return normalized
@@ -393,6 +486,23 @@ def _bounded_int(value: Any, low: int, high: int, fallback: int) -> int:
     except (TypeError, ValueError):
         parsed = fallback
     return max(low, min(high, parsed))
+
+
+def _normalize_skill_markdown(kind: str, skill: str) -> str:
+    stripped = skill.strip()
+    if stripped.startswith("---\nname:") and "\n---" in stripped[4:]:
+        return stripped
+
+    body = stripped.replace("---", "").strip()
+    return f"""---
+name: dockmind-{kind}-agent
+description: Execute DockMind logistics actions for the {kind} role.
+---
+
+# DockMind {kind.title()} Agent Skill
+
+{body}
+"""
 
 
 def _local_cargo_manifest(detections: list[dict], prompt: str, route: list[str]) -> list[dict]:

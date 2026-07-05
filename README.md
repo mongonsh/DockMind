@@ -15,7 +15,7 @@ Use **Camera** -> **Capture** for live cargo intake, or upload a real cargo
 image. **YOLO** sends the frame to `POST /api/detect`, runs `yolov8s-world.pt`
 with cargo prompts, and draws the returned boxes on the actual displayed image
 area. **Analyze** sends those real detections to `POST /api/analyze-cargo`;
-Gemini turns them into a cargo manifest when `GEMINI_API_KEY` is configured.
+Qwen turns them into a cargo manifest when `QWEN_API_KEY` is configured.
 The first YOLO run may download CLIP weights; later runs are cached.
 
 ## Real AI endpoints
@@ -23,7 +23,7 @@ The first YOLO run may download CLIP weights; later runs are cached.
 - `GET /api/config` checks which integrations are configured.
 - `POST /api/detect` runs YOLO / YOLO-World cargo detection.
 - `POST /api/analyze-cargo` turns real detections into cargo manifest data.
-- `POST /api/agent-skill` generates a gstack-compatible agent skill with Gemini.
+- `POST /api/agent-skill` generates a gstack-compatible agent skill with Qwen.
 - `POST /api/voice-command` parses voice commands into DockMind actions.
 - `POST /api/crustdata` is an optional Crustdata proxy for account-specific enrichment.
 
@@ -31,6 +31,8 @@ The app never exposes secret values to the browser. Put secrets in `.env` locall
 or in deploy environment variables:
 
 ```bash
+QWEN_API_KEY=...
+QWEN_MODEL=qwen-plus,qwen-turbo,qwen-max
 GEMINI_API_KEY=...
 GEMINI_MODEL=gemini-3.5-flash,gemini-flash-latest,gemini-2.5-flash
 GOOGLE_CLOUD_PROJECT_ID=...
@@ -79,7 +81,7 @@ Render is configured with `render.yaml`.
 
 1. Push this repo to GitHub.
 2. Create a Render Blueprint from `render.yaml`.
-3. Add environment variables for Gemini, Crustdata, Shisa, and `GBRAIN_ENABLED`.
+3. Add environment variables for Qwen, Crustdata, Shisa, and `GBRAIN_ENABLED`.
 4. Deploy the Docker service.
 
 The Docker image installs YOLO dependencies and serves the app with

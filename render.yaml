@@ -6,6 +6,10 @@ services:
     autoDeploy: true
     healthCheckPath: /api/config
     envVars:
+      - key: QWEN_API_KEY
+        sync: false
+      - key: QWEN_MODEL
+        value: qwen-plus,qwen-turbo,qwen-max
       - key: GEMINI_API_KEY
         sync: false
       - key: CRUSTDATA_API_KEY
